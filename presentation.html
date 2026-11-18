@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS SSM Patch Compliance Light Board - Project Presentation</title>
+    <style>
+        :root {
+            --bg-color: #0b0e14;
+            --slide-bg: #151922;
+            --accent-green: #00e676;
+            --accent-yellow: #ffd600;
+            --accent-red: #ff1744;
+            --accent-blue: #29b6f6;
+            --text-main: #f0f4f8;
+            --text-sub: #94a3b8;
+            --card-bg: #1e2430;
+            --border-color: #2e384d;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+        }
+
+        .slide-container {
+            width: 1000px;
+            height: 620px;
+            background-color: var(--slide-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 45px 55px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+            display: none;
+            flex-direction: column;
+            position: relative;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .slide-container.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .slide-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+
+        .slide-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .slide-tag {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            color: var(--accent-blue);
+            font-weight: 600;
+        }
+
+        .slide-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* Title Slide Styling */
+        .title-slide {
+            text-align: center;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .title-badge {
+            background: linear-gradient(135deg, rgba(41,182,246,0.1), rgba(0,230,118,0.1));
+            border: 1px solid var(--accent-blue);
+            color: var(--accent-blue);
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+
+        .main-title {
+            font-size: 42px;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 15px;
+            background: linear-gradient(90deg, #ffffff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .main-subtitle {
+            font-size: 20px;
+            color: var(--text-sub);
+            max-width: 750px;
+            margin-bottom: 35px;
+            line-height: 1.5;
+        }
+
+        .mini-lights {
+            display: flex;
+            gap: 25px;
+            margin-bottom: 35px;
+        }
+
+        .mini-light {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+        }
+
+        .green-glow { background: var(--accent-green); box-shadow: 0 0 20px var(--accent-green); }
+        .yellow-glow { background: var(--accent-yellow); box-shadow: 0 0 20px var(--accent-yellow); }
+        .red-glow { background: var(--accent-red); box-shadow: 0 0 20px var(--accent-red); }
+
+        /* Grid Layouts */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 22px;
+        }
+
+        .card h3 {
+            font-size: 18px;
+            margin-bottom: 12px;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card p, .card li {
+            font-size: 14px;
+            color: var(--text-sub);
+            line-height: 1.6;
+        }
+
+        .card ul {
+            padding-left: 20px;
+        }
+
+        .flow-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+
+        .flow-node {
+            background-color: #252d3d;
+            border: 1px solid #3b465e;
+            padding: 15px 20px;
+            border-radius: 10px;
+            text-align: center;
+            flex: 1;
+            margin: 0 8px;
+        }
+
+        .flow-node strong {
+            display: block;
+            font-size: 15px;
+            color: var(--text-main);
+            margin-bottom: 4px;
+        }
+
+        .flow-node span {
+            font-size: 12px;
+            color: var(--text-sub);
+        }
+
+        .flow-arrow {
+            color: var(--accent-blue);
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        /* Navigation Controls */
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        button {
+            background-color: var(--card-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #2b3345;
+            border-color: var(--accent-blue);
+        }
+
+        .slide-counter {
+            font-size: 15px;
+            color: var(--text-sub);
+            font-weight: 600;
+        }
+
+        .speaker-notes {
+            margin-top: 15px;
+            background-color: rgba(255,255,255,0.03);
+            border-left: 3px solid var(--accent-blue);
+            padding: 10px 15px;
+            font-size: 12px;
+            color: #818cf8;
+            border-radius: 0 8px 8px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SLIDE 1: Title -->
+    <div class="slide-container active" id="slide-1">
+        <div class="slide-content title-slide">
+            <div class="title-badge">☁️ Cloud Infrastructure & Systems Automation</div>
+            <h1 class="main-title">Patch Compliance Light Board</h1>
+            <p class="main-subtitle">A Serverless Fleet Compliance Monitor and 3-LED Operations Dashboard powered by AWS Systems Manager & AWS Lambda</p>
+            <div class="mini-lights">
+                <div class="mini-light green-glow"></div>
+                <div class="mini-light yellow-glow"></div>
+                <div class="mini-light red-glow"></div>
+            </div>
+            <div style="font-size: 14px; color: var(--text-sub);">
+                <strong>Environment:</strong> AWS Learner Lab &nbsp;|&nbsp; <strong>Interface:</strong> Streamlit & VS Code &nbsp;|&nbsp; <strong>Architecture:</strong> Serverless 3-Tier
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 2: Problem & Motivation -->
+    <div class="slide-container" id="slide-2">
+        <div class="slide-header">
+            <div class="slide-title">⚠️ Problem Statement & Challenges</div>
+            <div class="slide-tag">Context</div>
+        </div>
+        <div class="slide-content">
+            <div class="grid-2">
+                <div class="card">
+                    <h3>🚨 Enterprise Patching Risks</h3>
+                    <ul>
+                        <li>Unpatched operating systems are the #1 attack vector for security breaches and CVE exploits.</li>
+                        <li>Auditing hundreds of servers across multiple cloud environments manually is slow and error-prone.</li>
+                        <li>Operations teams lack immediate, glanceable health status during critical security windows.</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>⚙️ The Operational Gap</h3>
+                    <ul>
+                        <li><strong>Console Fatigue:</strong> Navigating deep AWS menus just to check compliance slows down response times.</li>
+                        <li><strong>Pending Reboot Visibility:</strong> Servers frequently install security patches but remain vulnerable until rebooted.</li>
+                        <li><strong>Need for NOC Simplicity:</strong> Operations centers require an instant 3-state traffic light visual board.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="speaker-notes">
+                <strong>Speaker Notes:</strong> Explain why patch monitoring matters: security breaches stem from missing updates. Highlight that deep cloud menus create operational lag, motivating a simple 3-LED traffic light display.
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 3: Proposed Solution -->
+    <div class="slide-container" id="slide-3">
+        <div class="slide-header">
+            <div class="slide-title">💡 The Solution: 3-LED Light Board</div>
+            <div class="slide-tag">Concept</div>
+        </div>
+        <div class="slide-content">
+            <p style="color: var(--text-sub); margin-bottom: 20px; font-size: 15px;">
+                A centralized, real-time visual light board inspired by industrial status panels, backed by AWS Systems Manager and serverless cloud automation.
+            </p>
+            <div class="grid-3">
+                <div class="card" style="border-top: 4px solid var(--accent-green);">
+                    <h3>🟢 COMPLIANT</h3>
+                    <p>All instances satisfy approved baseline patch policies. Zero missing security updates and zero pending reboots.</p>
+                </div>
+                <div class="card" style="border-top: 4px solid var(--accent-yellow);">
+                    <h3>🟡 PENDING</h3>
+                    <p>Updates have been staged or installed that require an immediate system reboot, or an instance scan is currently pending.</p>
+                </div>
+                <div class="card" style="border-top: 4px solid var(--accent-red);">
+                    <h3>🔴 NON-COMPLIANT</h3>
+                    <p>One or more instances are actively missing critical security updates or failed the automated baseline scan.</p>
+                </div>
+            </div>
+            <div class="speaker-notes">
+                <strong>Speaker Notes:</strong> Present the 3 LED states. Emphasize that Yellow is critical because a patched server without a reboot is still running old vulnerable memory code.
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 4: Architecture -->
+    <div class="slide-container" id="slide-4">
+        <div class="slide-header">
+            <div class="slide-title">🏗️ End-to-End System Architecture</div>
+            <div class="slide-tag">Architecture</div>
+        </div>
+        <div class="slide-content">
+            <div class="flow-diagram">
+                <div class="flow-node">
+                    <strong>1. EC2 Fleet</strong>
+                    <span>Amazon Linux<br>+ SSM Agent</span>
+                </div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node">
+                    <strong>2. AWS SSM</strong>
+                    <span>Patch Manager<br>Baseline Scans</span>
+                </div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node">
+                    <strong>3. AWS Lambda</strong>
+                    <span>Python Serverless<br>Decision Engine</span>
+                </div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node">
+                    <strong>4. Function URL</strong>
+                    <span>Secure HTTPS<br>CORS REST API</span>
+                </div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-node">
+                    <strong>5. Streamlit</strong>
+                    <span>VS Code Client<br>3-LED UI</span>
+                </div>
+            </div>
+            <div class="grid-2">
+                <div class="card">
+                    <h3>🔒 Zero Inbound Ports</h3>
+                    <p>The SSM Agent communicates over outbound HTTPS (port 443). No open inbound SSH (port 22) or web ports required on servers.</p>
+                </div>
+                <div class="card">
+                    <h3>⚡ Serverless Decoupling</h3>
+                    <p>The dashboard never holds AWS credentials. It consumes a lightweight JSON payload generated on-demand by AWS Lambda.</p>
+                </div>
+            </div>
+            <div class="speaker-notes">
+                <strong>Speaker Notes:</strong> Walk through the 5 architectural blocks. Highlight the security win of zero inbound ports and serverless decoupling.
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 5: AWS Systems Manager Implementation -->
+    <div class="slide-container" id="slide-5">
+        <div class="slide-header">
+            <div class="slide-title">🛠️ AWS Systems Manager & Patch Manager</div>
+            <div class="slide-tag">Cloud Infrastructure</div>
+        </div>
+        <div class="slide-content">
+            <div class="grid-2">
+                <div class="card">
+                    <h3>📋 Patch Baselines</h3>
+                    <ul>
+                        <li>Evaluates fleet against <code>AWS-DefaultPatchBaseline</code>.</li>
+                        <li>Automatically classifies updates by classification: Security, Bugfix, and Critical advisories.</li>
+                        <li>Configured with custom approval rules and compliance severity levels.</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>🚀 Automated Execution</h3>
+                    <ul>
+                        <li>Executes via SSM Run Command document: <code>AWS-RunPatchBaseline</code>.</li>
+                        <li>Supported operations: <strong>Scan Only</strong> (inspection) and <strong>Scan & Install</strong> (remediation).</li>
+                        <li>Stores compliance diagnostic snapshots directly in SSM Compliance store.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="speaker-notes">
+                <strong>Speaker Notes:</strong> Detail how SSM works. Explain that AWS-RunPatchBaseline audits installed RPM packages against upstream Amazon Linux security advisories.
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 6: Serverless Backend (AWS Lambda) -->
+    <div class="slide-container" id="slide-6">
+        <div class="slide-header">
+            <div class="slide-title">🧠 Serverless Backend: AWS Lambda</div>
+            <div class="slide-tag">Logic Tier</div>
+        </div>
+        <div class="slide-content">
+            <div class="grid-2">
+                <div class="card">
+                    <h3>⚙️ The Lambda Evaluator</h3>
+                    <ul>
+                        <li>Function: <code>PatchComplianceEvaluator</code> (Python 3.12).</li>
+                        <li>Assigned pre-configured <strong><code>LabRole</code></strong> (compatible with AWS Learner Lab IAM policies).</li>
+                        <li>Calls Boto3 APIs: <code>describe_instance_information</code> and <code>describe_instance_patch_states</code>.</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>🌐 Lambda Function URL</h3>
+                    <ul>
+                        <li>Provides direct HTTPS invocation without complex API Gateway setup.</li>
+                        <li>Built-in CORS headers allow local and browser-based client requests.</li>
+                        <li>Bypasses 4-hour Learner Lab session credential expiration issues on local client.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="speaker-notes">
+                <strong>Speaker Notes:</strong> Explain how Lambda solves the AWS Learner Lab session timeout problem: since Lambda runs inside AWS with LabRole, the local client never needs temporary access tokens.
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 7: Frontend & VS Code Integration -->
+    <div class="slide-container" id="slide-7">
+        <div class="slide-header">
+            <div class="slide-title">💻 Frontend Dashboard & VS Code Workflow</div>
+            <div class="slide-tag">Presentation Tier</div>
+        </div>
+        <div class="slide-content">
+            <div class="grid-2">
+                <div class="card">
+                    <h3>🎨 Interactive Light Board (Streamlit)</h3>
+                    <ul>
+                        <li>Glowing radial gradient CSS with realistic neon illumination.</li>
+                        <li>Real-time KPI metrics: Total Nodes, Compliant Nodes, Pending, and Non-Compliant.</li>
+                        <li>Detailed diagnostic table showing instance IDs, operating system, and last scan timestamps.</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>🕹️ Simulation & Live Modes</h3>
+                    <ul>
+                        <li><strong>Live Mode:</strong> Real-time REST call to AWS Lambda URL.</li>
+                        <li><strong>Interactive Demo Controls:</strong> 1-click toggles to simulate Yellow (Pending Reboot) and Red (Critical Vulnerability) for examiner presentations.</li>
+                        <li>Packaged cleanly to run with <code>python -m streamlit run app.py</code> in VS Code.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="speaker-notes">
+                <strong>Speaker Notes:</strong> Highlight the presentation features: custom CSS glowing lights and the built-in demo mode that allows seamless viva demonstrations.
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 8: Results & Live Demonstration -->
+    <div class="slide-container" id="slide-8">
+        <div class="slide-header">
+            <div class="slide-title">📊 Results & Fleet Evaluation</div>
+            <div class="slide-tag">Validation</div>
+        </div>
+        <div class="slide-content">
+            <div class="grid-3">
+                <div class="card" style="text-align: center;">
+                    <div style="font-size: 36px; color: var(--accent-green); font-weight: 800;">100%</div>
+                    <p><strong>Initial Compliance</strong></p>
+                    <span style="font-size: 12px; color: var(--text-sub);">63 installed patches across 2 Amazon Linux instances.</span>
+                </div>
+                <div class="card" style="text-align: center;">
+                    <div style="font-size: 36px; color: var(--accent-blue); font-weight: 800;">&lt; 1 sec</div>
+                    <p><strong>Dashboard Latency</strong></p>
+                    <span style="font-size: 12px; color: var(--text-sub);">Direct HTTPS call to Lambda Function URL.</span>
+                </div>
+                <div class="card" style="text-align: center;">
+                    <div style="font-size: 36px; color: var(--accent-yellow); font-weight: 800;">0 Keys</div>
+                    <p><strong>Client Credential Risk</strong></p>
+                    <span style="font-size: 12px; color: var(--text-sub);">No AWS access keys stored on local developer machines.</span>
+                </div>
+            </div>
+            <div class="card" style="margin-top: 20px;">
+                <h3>✅ Demonstrated Capabilities</h3>
+                <p>Successfully verified end-to-end detection of compliant instances, simulated pending reboot states, and verified instant reflection on the digital Light Board panel.</p>
+            </div>
+            <div class="speaker-notes">
+                <strong>Speaker Notes:</strong> Summarize the measured results: 100% compliance verified, sub-second dashboard load time, zero secret key exposure.
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 9: Conclusion & Future Scope -->
+    <div class="slide-container" id="slide-9">
+        <div class="slide-header">
+            <div class="slide-title">🎯 Conclusion & Future Roadmap</div>
+            <div class="slide-tag">Summary</div>
+        </div>
+        <div class="slide-content">
+            <div class="grid-2">
+                <div class="card">
+                    <h3>🏁 Project Conclusion</h3>
+                    <ul>
+                        <li>Transformed manual cloud patch auditing into an executive 3-LED operations light board.</li>
+                        <li>Fully integrated AWS Systems Manager, AWS Lambda, and Streamlit in an AWS Learner Lab environment.</li>
+                        <li>Demonstrated enterprise-level decoupling, high security, and minimal operational overhead.</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>🔮 Future Roadmap</h3>
+                    <ul>
+                        <li><strong>Automated Remediation:</strong> EventBridge trigger to auto-patch non-compliant nodes immediately.</li>
+                        <li><strong>Multi-Channel Alerting:</strong> AWS SNS push notifications to Slack and email when RED state triggers.</li>
+                        <li><strong>Physical Hardware Integration:</strong> Connect dashboard to physical IoT 3-LED hardware over MQTT/AWS IoT Core.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="speaker-notes">
+                <strong>Speaker Notes:</strong> Conclude by summarizing what was built, and outline practical next steps like automated remediation and physical IoT LED hardware.
+            </div>
+        </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+        <button id="prevBtn" onclick="prevSlide()">◀ Previous</button>
+        <span class="slide-counter" id="slideCounter">Slide 1 of 9</span>
+        <button id="nextBtn" onclick="nextSlide()">Next ▶</button>
+        <button onclick="window.print()" style="background-color: #2563eb; color: white;">🖨️ Export to PDF / Print</button>
+    </div>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 9;
+
+        function updateSlide() {
+            document.querySelectorAll('.slide-container').forEach(el => el.classList.remove('active'));
+            document.getElementById(`slide-${currentSlide}`).classList.add('active');
+            document.getElementById('slideCounter').innerText = `Slide ${currentSlide} of ${totalSlides}`;
+            
+            document.getElementById('prevBtn').disabled = currentSlide === 1;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides;
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides) {
+                currentSlide++;
+                updateSlide();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 1) {
+                currentSlide--;
+                updateSlide();
+            }
+        }
+
+        // Keyboard arrow navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') nextSlide();
+            if (e.key === 'ArrowLeft') prevSlide();
+        });
+
+        updateSlide();
+    </script>
+</body>
+</html>
